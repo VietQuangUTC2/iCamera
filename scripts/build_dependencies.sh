@@ -17,6 +17,17 @@ NLOHMANN_JSON_VERSION="v3.12.0"
 # Dependencies directory
 DEPS_DIR="$PROJECT_ROOT/dependencies"
 
+# Clean mode
+if [ "$MODE" = "clean" ]; then
+    echo "[+] Cleaning dependencies, lib, and include folders..."
+    rm -rf "$LIB_DIR"/*
+    rm -rf "$INCLUDE_DIR"/openssl "$INCLUDE_DIR"/paho "$INCLUDE_DIR"/nlohmann
+    rm -rf "$DEPS_DIR"/openssl-* "$DEPS_DIR"/paho.mqtt.c-* 
+    find "$DEPS_DIR" -name 'build' -type d -exec rm -rf {} +
+    echo "[+] Clean completed."
+    exit 0
+fi
+
 # Toolchain for cross-compilation
 CROSS_PREFIX="arm-rockchip830-linux-uclibcgnueabihf-"
 # Build OpenSSL (for both native and cross)

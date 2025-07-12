@@ -23,23 +23,59 @@ The project uses `scripts/build.sh` to automatically build dependencies:
 - Corresponding sysroot
 - CMake 3.10+
 
-## Usage
+## Build Process
 
-### 1. Native Build (x86-64)
+### Step 1: Build Dependencies
+
+First, build all required dependencies:
 
 ```bash
-# Build for current system
+# Native build
 ./scripts/build.sh native
 
-# Or simply (default is native)
-./scripts/build.sh
+# Cross-compilation
+./scripts/build.sh cross
 ```
 
-### 2. Cross-compilation (ARM)
+### Step 2: Build Main Project
+
+After dependencies are built, build the main project:
 
 ```bash
-# Build for ARM target
-./scripts/build.sh cross
+# Native build
+./scripts/build_project.sh native
+
+# Cross-compilation
+./scripts/build_project.sh cross
+
+# Build and install
+./scripts/build_project.sh install
+
+# Clean build
+./scripts/build_project.sh clean
+```
+
+## Manual CMake Build
+
+If you prefer to use CMake directly:
+
+### Native Build
+```bash
+mkdir build && cd build
+cmake ..
+make -j$(nproc)
+```
+
+### Cross-compilation
+```bash
+mkdir build && cd build
+cmake .. -DCMAKE_TOOLCHAIN_FILE=../CMakeLists.txt.cross
+make -j$(nproc)
+```
+
+### Install
+```bash
+make install DESTDIR=/path/to/install
 ```
 
 ## Output Structure
@@ -48,6 +84,10 @@ After successful build, files will be created in:
 
 ```
 iCamera/
+├── build/               # Build artifacts
+│   ├── bin/            # Executables
+│   └── lib/            # Libraries
+├── install/             # Installation directory
 ├── include/
 │   ├── openssl/    # OpenSSL headers
 │   ├── paho/       # Paho MQTT headers
@@ -61,21 +101,43 @@ iCamera/
     └── libpaho-mqtt3a.so   # Paho MQTT shared library
 ```
 
+## CMake Configuration
+
+### Main CMakeLists.txt Features
+- **C++17 standard** support
+- **Debug/Release** build configurations
+- **Thread support** with pthread
+- **Automatic source discovery** with GLOB_RECURSE
+- **Install rules** for deployment
+- **Cross-compilation** support
+
+### Build Configurations
+```bash
+# Debug build
+cmake .. -DCMAKE_BUILD_TYPE=Debug
+
+# Release build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+
+# Custom compiler
+cmake .. -DCMAKE_CXX_COMPILER=g++-9
+```
+
 ## Toolchain Configuration
 
 ### Cross-compilation Settings
 
-File `scripts/build.sh` contains toolchain configuration:
+File `CMakeLists.txt.cross` contains toolchain configuration:
 
 ```bash
 # Toolchain prefix
-CROSS_PREFIX="arm-rockchip830-linux-uclibcgnueabihf-"
+TOOLCHAIN_PREFIX="arm-rockchip830-linux-uclibcgnueabihf"
 
 # Sysroot path
-SYSROOT="/home/quangtv98/workspace/camera/rockchip/sdk/luckfox-pico/tools/linux/toolchain/arm-rockchip830-linux-uclibcgnueabihf/arm-rockchip830-linux-uclibcgnueabihf/sysroot"
+CMAKE_SYSROOT="/home/quangtv98/workspace/camera/rockchip/sdk/luckfox-pico/tools/linux/toolchain/arm-rockchip830-linux-uclibcgnueabihf/arm-rockchip830-linux-uclibcgnueabihf/sysroot"
 ```
 
-**Note**: Update the `SYSROOT` path according to your toolchain.
+**Note**: Update the `CMAKE_SYSROOT` path according to your toolchain.
 
 ## Troubleshooting
 
@@ -102,7 +164,7 @@ libpaho-mqtt3as.so.1.3.13: ELF 64-bit LSB shared object, x86-64
 
 **Solution**: 
 - Remove old build directory: `rm -rf build/`
-- Ensure using `-DCMAKE_C_COMPILER=${CROSS_PREFIX}gcc`
+- Ensure using `-DCMAKE_TOOLCHAIN_FILE=../CMakeLists.txt.cross`
 
 #### 3. "same file" Copy Error
 ```
@@ -113,18 +175,29 @@ cp: '/path/to/file' and '/path/to/file' are the same file
 
 **Solution**: Check and fix paths in script
 
+#### 4. CMake Configuration Errors
+```
+CMake Error: Could not find OpenSSL
+```
+
+**Cause**: Dependencies not built or paths incorrect
+
+**Solution**: 
+- Run `./scripts/build.sh` first
+- Check include and lib directories exist
+
 ### Verify Results
 
 #### Native Build
 ```bash
-file lib/*.so*
-# Expected: ELF 64-bit LSB shared object, x86-64
+file build/bin/iCamera
+# Expected: ELF 64-bit LSB executable, x86-64
 ```
 
 #### Cross-compilation
 ```bash
-file lib/*.so*
-# Expected: ELF 32-bit LSB shared object, ARM
+file build/bin/iCamera
+# Expected: ELF 32-bit LSB executable, ARM
 ```
 
 ## Clean Build
@@ -132,13 +205,17 @@ file lib/*.so*
 To rebuild from scratch:
 
 ```bash
-# Remove all build artifacts
+# Clean dependencies
 rm -rf dependencies/*/build/
 rm -rf lib/*
 rm -rf include/openssl include/paho include/nlohmann
 
-# Rebuild
+# Clean project
+./scripts/build_project.sh clean
+
+# Rebuild everything
 ./scripts/build.sh cross
+./scripts/build_project.sh cross
 ```
 
 ## Versions
@@ -178,10 +255,11 @@ target_link_libraries(your_target
 
 ## Notes
 
-1. **Permissions**: Ensure script is executable: `chmod +x scripts/build.sh`
+1. **Permissions**: Ensure script is executable: `chmod +x scripts/build_project.sh`
 2. **Network**: Internet connection required to download dependencies
 3. **Disk space**: Approximately 500MB needed for build process
 4. **Time**: Cross-compilation may take 10-15 minutes
+5. **Dependencies**: Always build dependencies before building main project
 
 ## Support
 
@@ -189,4 +267,5 @@ If you encounter issues, check:
 1. Toolchain path is correct
 2. Sysroot exists
 3. Sufficient disk space
-4. Stable network connection 
+4. Stable network connection
+5. Dependencies are built successfully 
