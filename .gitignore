@@ -39,3 +39,10 @@
 
 # debug information files
 *.dwo
+
+# Dependencies and Libraries
+dependencies/
+lib/
+
+# IDE and Editor files
+.vscode/
