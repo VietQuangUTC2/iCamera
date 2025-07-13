@@ -2,7 +2,8 @@
 #include <iostream>
 #include "aiotek_mailbox.hpp"
 #include "aiotek_console.hpp"
-#include "aiotek_managers_task.hpp"
+#include "aiotek_task.hpp"
+#include "aiotek_console.hpp"
 
 void task_sender() {
     while (true) {
@@ -27,7 +28,7 @@ void task_sender() {
             AIOTEK::g_mailbox.send({AIOTEK::TaskID::Sender, AIOTEK::TaskID::Receiver, AIOTEK::ErrorEvent{-1, "Unknown command: " + line}});
         }
         
-        if (AIOTEK::g_shutdown_requested) {
+        if (g_shutdown_requested) {
             break;
         }
     }

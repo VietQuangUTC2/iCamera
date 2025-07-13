@@ -1,6 +1,7 @@
 #include <iostream>
 #include "aiotek_mailbox.hpp"
-#include "aiotek_managers_task.hpp"
+#include "aiotek_task.hpp"
+#include "aiotek_console.hpp"
 
 void task_receiver() {
     while (true) {
@@ -13,7 +14,7 @@ void task_receiver() {
                 std::cout << "[Receiver] SignalEvent: " << arg.signal << std::endl;
                 if (arg.signal == 0) {
                     std::cout << "[Receiver] Shutdown signal received. Exiting..." << std::endl;
-                    AIOTEK::g_shutdown_requested = true;
+                    g_shutdown_requested = true;
                 }
             } else if constexpr (std::is_same_v<T, AIOTEK::CustomEvent>) {
                 std::cout << "[Receiver] CustomEvent: " << arg.name << " | " << arg.payload << std::endl;
@@ -26,7 +27,7 @@ void task_receiver() {
             }
         }, env.payload);
         
-        if (AIOTEK::g_shutdown_requested) {
+        if (g_shutdown_requested) {
             break;
         }
     }

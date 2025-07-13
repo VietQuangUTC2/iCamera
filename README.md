@@ -160,7 +160,7 @@ Configuration can be modified through:
    void my_new_task() {
        while (true) {
            // Task logic here
-           if (AIOTEK::g_shutdown_requested) break;
+           if (g_shutdown_requested) break;
        }
    }
    ```
