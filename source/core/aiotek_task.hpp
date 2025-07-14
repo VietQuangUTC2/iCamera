@@ -12,49 +12,49 @@
 
 namespace AIOTEK {
 
-class TaskBase {
+class Task {
 public:
-    TaskBase(const std::string& name, int id)
-        : name_(name), id_(id), running_(false) {}
-    virtual ~TaskBase() = default;
+    Task(const std::string& name, int id)
+        : m_name(name), m_id(id), m_running(false) {}
+    virtual ~Task() = default;
 
     virtual void start() = 0;
     virtual void stop() = 0;
-    virtual bool isRunning() const { return running_; }
-    std::string name() const { return name_; }
-    int id() const { return id_; }
+    virtual bool state() const { return m_running; }
+    std::string name() const { return m_name; }
+    int id() const { return m_id; }
 
 protected:
-    std::string name_;
-    int id_;
-    std::atomic<bool> running_;
-    std::thread thread_;
-    mutable std::mutex mutex_;
+    std::string m_name;
+    int m_id;
+    std::atomic<bool> m_running;
+    std::thread m_thread;
+    mutable std::mutex m_mutex;
 };
 
-class ManagersTask {
+class TaskManagers {
 public:
-    ManagersTask();
-    ~ManagersTask();
+    TaskManagers();
+    ~TaskManagers();
     bool start();
     void stop();
-    bool isRunning() const;
-    void addTask(std::unique_ptr<TaskBase> task);
-    TaskBase* getTaskByName(const std::string& name);
-    TaskBase* getTaskById(int id);
-    std::vector<TaskBase*> getAllTasks();
+    bool state() const;
+    void addTask(std::unique_ptr<Task> task);
+    Task* getTaskByName(const std::string& name);
+    Task* getTaskById(int id);
+    std::vector<Task*> getAllTasks();
 
 private:
-    bool running_;
+    bool m_running;
     std::thread taskThread_;
     Timer timer_;
-    std::vector<std::unique_ptr<TaskBase>> tasks_;
-    mutable std::mutex mutex_;
+    std::vector<std::unique_ptr<Task>> tasks_;
+    mutable std::mutex m_mutex;
     void run();
     void processManagers();
 };
 
-extern ManagersTask managers;
+extern TaskManagers managers;
 
 } // namespace AIOTEK
 

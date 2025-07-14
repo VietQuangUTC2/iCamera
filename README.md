@@ -16,7 +16,7 @@ A modular, multi-threaded camera system designed for embedded applications with 
 
 iCamera uses a layered architecture with the following components:
 
-- **Task Management Layer**: Centralized task coordination via `ManagersTask`
+- **Task Management Layer**: Centralized task coordination via `TaskManagers`
 - **Communication Layer**: Thread-safe mailbox system for inter-task messaging
 - **Application Tasks**: Specialized tasks for user input, message processing, audio, video, and networking
 - **Hardware Abstraction Layer**: Device managers for audio, video, and network hardware
@@ -75,9 +75,9 @@ Once the application is running, you can interact with it using the following co
 
 ```
 iCamera starting...
-[INFO] ManagersTask: Starting
-[INFO] ManagersTask: Started task Sender
-[INFO] ManagersTask: Started task Receiver
+[INFO] TaskManagers: Starting
+[INFO] TaskManagers: Started task Sender
+[INFO] TaskManagers: Started task Receiver
 Enter command (msg <text> | signal <num> | event <name> <payload> | quit): msg Hello World
 [Receiver] From: 2 To: 3
 [Receiver] String: Hello World
@@ -94,9 +94,9 @@ Enter command (msg <text> | signal <num> | event <name> <payload> | quit): quit
 [Receiver] From: 2 To: 3
 [Receiver] SignalEvent: 0
 [Receiver] Shutdown signal received. Exiting...
-[INFO] ManagersTask: Stopping
-[INFO] ManagersTask: Stopped task Sender
-[INFO] ManagersTask: Stopped task Receiver
+[INFO] TaskManagers: Stopping
+[INFO] TaskManagers: Stopped task Sender
+[INFO] TaskManagers: Stopped task Receiver
 iCamera stopped
 ```
 
@@ -149,7 +149,7 @@ Configuration can be modified through:
 
 - **Hardware Settings**: Device parameters in respective manager classes
 - **Network Settings**: MQTT broker configuration
-- **Task Parameters**: Task-specific settings in `ManagersTask`
+- **Task Parameters**: Task-specific settings in `TaskManagers`
 
 ## Development
 
@@ -165,7 +165,7 @@ Configuration can be modified through:
    }
    ```
 
-2. **Register the task** in `ManagersTask` constructor:
+2. **Register the task** in `TaskManagers` constructor:
    ```cpp
    tasks.push_back({"MyTask", my_new_task});
    ```
@@ -188,7 +188,7 @@ Configuration can be modified through:
 
 1. **Implement device manager** following the existing pattern
 2. **Create task wrapper** for the hardware module
-3. **Add to task list** in `ManagersTask`
+3. **Add to task list** in `TaskManagers`
 4. **Configure device parameters** as needed
 
 ## Testing
